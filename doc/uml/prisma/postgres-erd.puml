@@ -1,0 +1,444 @@
+@startuml
+
+skinparam linetype ortho
+
+enum GENERAL_STATUS_TYPES {
+  INACTIVE
+  ACTIVE
+  PLANNED
+  TODO
+  IN_PROGRESS
+  DONE
+  COMPLETED
+  CANCELLED
+}
+
+enum PROJECT_ROLE_TYPES {
+  PM
+  EM
+  DEV
+  QA
+  BA
+  UX
+  I
+}
+
+enum SCRUM_ROLE_TYPES {
+  PO
+  SM
+  MEMBER
+  I
+}
+
+enum TASK_COMPLEXITY_TYPES {
+  XS
+  S
+  M
+  L
+  XL
+  I
+}
+
+enum TASK_UNCERTAINTY_TYPES {
+  NONE
+  SOME
+  LOW
+  MODERATE
+  HIGH
+  EXTREME
+}
+
+enum TASK_DEPENDENCY_TYPES {
+  NONE
+  ALMOST_NONE
+  SOME
+  FEW
+  MORE_THAN_A_FEW
+  UNKNOWN
+}
+
+enum TASK_EFFORT_TYPES {
+  XS
+  S
+  M
+  L
+  XL
+  I
+}
+
+enum TASK_TYPES {
+  EPIC
+  STORY
+  TASK
+  BUG
+  FEATURE
+  IMPROVEMENT
+  SUB_TASK
+}
+
+enum TASK_STATUS_TYPES {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TASK_PRIORITY_TYPES {
+  P0
+  P1
+  P2
+  P3
+}
+
+enum TASK_RISK_TYPES {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ITERATION_TYPES {
+  SCRUM
+  KANBAN
+}
+
+enum PROJECT_STATUS_TYPES {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum RELATION_TYPES {
+  PARENT
+  SUBTASKS
+  PREDECESSORS
+  SUCCESSORS
+  RELATES_TO
+  BLOCKED_BY
+}
+
+entity IdUuidEntity {
+  * UUID: String
+  * ID: String
+  * EntityUUID: String
+  PceIueTeam: ProjectContentEntity?
+  * TceIueMembers: TeamContentEntity[]
+  * TceIueProductOwner: TeamContentEntity[]
+  * TceIueScrumMaster: TeamContentEntity[]
+  * TceIueComments: TaskContentEntity[]
+}
+
+entity IdUuidStatusEntity {
+  * UUID: String
+  * ID: String
+  * EntityUUID: String
+  * status: GENERAL_STATUS_TYPES
+  * PceIuseIterations: ProjectContentEntity[]
+  * PceIuseBacklog: ProjectContentEntity[]
+  * TmeIuseIterations: TaskMetadataEntity[]
+  * IceIuseTasks: IterationContentEntity[]
+}
+
+entity NameUrlEntity {
+  * UUID: String
+  * name: String
+  * url: String
+  * TceNueLinks: TaskContentEntity[]
+  TceNueLink: TaskDescriptionEntity?
+  * TceNueLinkUUID: String
+}
+
+entity CommonDateEntity {
+  * UUID: String
+  * createdAt: DateTime
+  * createdBy: String
+  * updatedAt: DateTime
+  * updatedBy: String
+  startedAt: DateTime?
+  startedBy: String?
+  startDate: DateTime?
+  endDate: DateTime?
+  completedAt: DateTime?
+  completedBy: String?
+  * UserMetadataEntity: UserMetadataEntity[]
+  * TeamMetadataEntity: TeamMetadataEntity[]
+  * CommentMetadataEntity: CommentMetadataEntity[]
+  * MetricMetadataEntity: MetricMetadataEntity[]
+  * ProjectMetadataEntity: ProjectMetadataEntity[]
+  * TaskMetadataEntity: TaskMetadataEntity[]
+  * IterationMetadataEntity: IterationMetadataEntity[]
+}
+
+entity RelationEntity {
+  * UUID: String
+  * relationType: RELATION_TYPES
+  * sourceUUID: String
+  * targetUUID: String
+  * createdAt: DateTime
+  * updatedAt: DateTime
+  * TmeTreRelations: TaskMetadataEntity[]
+}
+
+entity UserEntity {
+  * ID: String
+  * UUID: String
+  * metadata: UserMetadataEntity
+  * content: UserContentEntity
+  * metadataUUID: String
+  * contentUUID: String
+}
+
+entity UserMetadataEntity {
+  * UUID: String
+  * name: String
+  * dates: CommonDateEntity
+  * datesUUID: String
+  UserEntity: UserEntity?
+}
+
+entity UserContentEntity {
+  * UUID: String
+  * email: String
+  * phone: String
+  * firstName: String
+  * lastName: String
+  * password: String
+  * projectRoles: PROJECT_ROLE_TYPES[]
+  * scrumRoles: SCRUM_ROLE_TYPES[]
+  UserEntity: UserEntity?
+}
+
+entity TeamEntity {
+  * ID: String
+  * UUID: String
+  * metadata: TeamMetadataEntity
+  * content: TeamContentEntity
+  * metadataUUID: String
+  * contentUUID: String
+}
+
+entity TeamMetadataEntity {
+  * UUID: String
+  * name: String
+  * dates: CommonDateEntity
+  * datesUUID: String
+  TeamEntity: TeamEntity?
+}
+
+entity TeamContentEntity {
+  * UUID: String
+  * email: String
+  * members: IdUuidEntity[]
+  productOwner: IdUuidEntity?
+  scrumMaster: IdUuidEntity?
+  TeamEntity: TeamEntity?
+  * TceIueProductOwnerUUID: String
+  * TceIueScrumMasterUUID: String
+}
+
+entity CommentEntity {
+  * ID: String
+  * UUID: String
+  * metadata: CommentMetadataEntity
+  * content: CommentContentEntity
+  * metadataUUID: String
+  * contentUUID: String
+}
+
+entity CommentMetadataEntity {
+  * UUID: String
+  * name: String
+  * dates: CommonDateEntity
+  * datesUUID: String
+  CommentEntity: CommentEntity?
+}
+
+entity CommentContentEntity {
+  * UUID: String
+  CommentEntity: CommentEntity?
+}
+
+entity MetricEntity {
+  * ID: String
+  * UUID: String
+  * metadata: MetricMetadataEntity
+  * content: MetricContentEntity
+  * metadataUUID: String
+  * contentUUID: String
+}
+
+entity MetricMetadataEntity {
+  * UUID: String
+  * name: String
+  * dates: CommonDateEntity
+  * datesUUID: String
+  MetricEntity: MetricEntity?
+}
+
+entity MetricContentEntity {
+  * UUID: String
+  MetricEntity: MetricEntity?
+}
+
+entity ProjectEntity {
+  * ID: String
+  * UUID: String
+  * metadata: ProjectMetadataEntity
+  * content: ProjectContentEntity
+  * metadataUUID: String
+  * contentUUID: String
+}
+
+entity ProjectMetadataEntity {
+  * UUID: String
+  * name: String
+  * status: PROJECT_STATUS_TYPES
+  * dates: CommonDateEntity
+  * datesUUID: String
+  ProjectEntity: ProjectEntity?
+}
+
+entity ProjectContentEntity {
+  * UUID: String
+  * email: String
+  * description: String
+  * iterations: IdUuidStatusEntity[]
+  * backlog: IdUuidStatusEntity[]
+  team: IdUuidEntity?
+  ProjectEntity: ProjectEntity?
+  * PceIueTeamUUID: String
+}
+
+entity IterationEntity {
+  * ID: String
+  * UUID: String
+  * metadata: IterationMetadataEntity
+  * content: IterationContentEntity
+  * metadataUUID: String
+  * contentUUID: String
+}
+
+entity IterationMetadataEntity {
+  * UUID: String
+  * name: String
+  * status: PROJECT_STATUS_TYPES
+  * priority: TASK_PRIORITY_TYPES
+  * risk: TASK_RISK_TYPES
+  * tags: String[]
+  * dates: CommonDateEntity
+  * datesUUID: String
+  * iterationType: ITERATION_TYPES
+  IterationEntity: IterationEntity?
+}
+
+entity IterationContentEntity {
+  * UUID: String
+  * description: String
+  * goal: String
+  * tasks: IdUuidStatusEntity[]
+  * columns: String[]
+  IterationEntity: IterationEntity?
+}
+
+entity TaskEntity {
+  * ID: String
+  * UUID: String
+  * metadata: TaskMetadataEntity
+  * content: TaskContentEntity
+  * metadataUUID: String
+  * contentUUID: String
+}
+
+entity TaskMetadataEntity {
+  * UUID: String
+  * name: String
+  * taskType: TASK_TYPES
+  * assignee: String
+  * status: TASK_STATUS_TYPES
+  * priority: TASK_PRIORITY_TYPES
+  * risk: TASK_RISK_TYPES
+  * tags: String[]
+  * dates: CommonDateEntity
+  * datesUUID: String
+  storyPoint: TaskStoryPointsEntity?
+  * iterations: IdUuidStatusEntity[]
+  * relations: RelationEntity[]
+  * column: String
+  TaskEntity: TaskEntity?
+  * TmeTspeStoryPointsUUID: String
+  * TmeTreRelationsUUID: String
+}
+
+entity TaskContentEntity {
+  * UUID: String
+  * context: String
+  description: TaskDescriptionEntity?
+  * links: NameUrlEntity[]
+  * comments: IdUuidEntity[]
+  TaskEntity: TaskEntity?
+  * TceTdeDescriptionUUID: String
+}
+
+entity TaskStoryPointsEntity {
+  * UUID: String
+  * complexity: TASK_COMPLEXITY_TYPES
+  * uncertainty: TASK_UNCERTAINTY_TYPES
+  * dependency: TASK_DEPENDENCY_TYPES
+  * effort: TASK_EFFORT_TYPES
+  * total: Int
+  TaskMetadataEntity: TaskMetadataEntity?
+}
+
+entity TaskDescriptionEntity {
+  * UUID: String
+  * summary: String
+  * details: String
+  * userStories: String[]
+  * acceptanceCriteria: String[]
+  * definitionOfDone: String[]
+  link: NameUrlEntity?
+  TceTdeDescriptionUUID: TaskContentEntity?
+}
+
+IdUuidEntity |o..o| ProjectContentEntity
+IdUuidStatusEntity ||..|| GENERAL_STATUS_TYPES
+NameUrlEntity }|..|{ TaskContentEntity
+CommonDateEntity ||..|{ UserMetadataEntity
+RelationEntity ||..|| RELATION_TYPES
+UserEntity |o..|| UserMetadataEntity
+CommonDateEntity ||..|{ UserMetadataEntity
+UserEntity |o..|| UserContentEntity
+TeamEntity |o..|| TeamMetadataEntity
+CommonDateEntity ||..|{ TeamMetadataEntity
+IdUuidEntity }|..|{ TeamContentEntity
+CommentEntity |o..|| CommentMetadataEntity
+CommonDateEntity ||..|{ CommentMetadataEntity
+CommentEntity |o..|| CommentContentEntity
+MetricEntity |o..|| MetricMetadataEntity
+CommonDateEntity ||..|{ MetricMetadataEntity
+MetricEntity |o..|| MetricContentEntity
+ProjectEntity |o..|| ProjectMetadataEntity
+CommonDateEntity ||..|{ ProjectMetadataEntity
+IdUuidEntity |o..o| ProjectContentEntity
+IterationEntity |o..|| IterationMetadataEntity
+CommonDateEntity ||..|{ IterationMetadataEntity
+IdUuidStatusEntity }|..|{ IterationContentEntity
+TaskEntity |o..|| TaskMetadataEntity
+IdUuidStatusEntity }|..|{ TaskMetadataEntity
+IdUuidEntity }|..|{ TaskContentEntity
+TaskMetadataEntity |o..o| TaskStoryPointsEntity
+NameUrlEntity |o..o| TaskDescriptionEntity
+IdUuidStatusEntity ||..|| GENERAL_STATUS_TYPES
+UserContentEntity ||..|{ PROJECT_ROLE_TYPES
+UserContentEntity ||..|{ SCRUM_ROLE_TYPES
+TaskStoryPointsEntity ||..|| TASK_COMPLEXITY_TYPES
+TaskStoryPointsEntity ||..|| TASK_UNCERTAINTY_TYPES
+TaskStoryPointsEntity ||..|| TASK_DEPENDENCY_TYPES
+TaskStoryPointsEntity ||..|| TASK_EFFORT_TYPES
+TaskMetadataEntity ||..|| TASK_TYPES
+TaskMetadataEntity ||..|| TASK_STATUS_TYPES
+IterationMetadataEntity ||..|| TASK_PRIORITY_TYPES
+IterationMetadataEntity ||..|| TASK_RISK_TYPES
+IterationMetadataEntity ||..|| ITERATION_TYPES
+ProjectMetadataEntity ||..|| PROJECT_STATUS_TYPES
+RelationEntity ||..|| RELATION_TYPES
+
+@enduml

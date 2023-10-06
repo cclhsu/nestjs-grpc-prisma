@@ -1,0 +1,515 @@
+// prisma/schema.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// https://www.prisma.io/docs/concepts/components/prisma-schema/data-model
+// https://www.prisma.io/docs/concepts/components/prisma-schema/relations/one-to-many-relations
+// https://www.prisma.io/docs/concepts/components/prisma-schema/relations/one-to-many-relations#mongodb
+// https://www.prisma.io/docs/concepts/components/prisma-schema/relations/many-to-many-relations#relational-databases
+// https://www.prisma.io/docs/concepts/components/prisma-schema/relations/many-to-many-relations#mongodb
+// https://www.prisma.io/docs/guides/other/troubleshooting-orm/help-articles/working-with-many-to-many-relations
+
+// npm i --save-dev prisma@latest
+// npm i @prisma/client@latest
+
+// npx prisma format --schema="db/prisma/schema-postgres.prisma"
+// npx prisma validate --schema="db/prisma/schema-postgres.prisma"
+// npx prisma generate --schema="db/prisma/schema-postgres.prisma"
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/prisma/postgres/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Define the IdUuidEntity model
+model IdUuidEntity {
+  UUID               String                @id @default(uuid())
+  ID                 String
+  EntityUUID         String
+  PceIueTeam         ProjectContentEntity? @relation(name: "PceIueTeam")
+  TceIueMembers      TeamContentEntity[]   @relation(name: "TceIueMembers")
+  TceIueProductOwner TeamContentEntity[]   @relation(name: "TceIueProductOwner")
+  TceIueScrumMaster  TeamContentEntity[]   @relation(name: "TceIueScrumMaster")
+  TceIueComments     TaskContentEntity[]   @relation(name: "TceIueComments")
+  // TceIueRelationEntity TceIueRelationEntity[]
+}
+
+// Define the ProjectMetadata model
+model IdUuidStatusEntity {
+  UUID              String                   @id @default(uuid())
+  ID                String
+  EntityUUID        String
+  status            GENERAL_STATUS_TYPES
+  PceIuseIterations ProjectContentEntity[]   @relation(name: "PceIuseIterations")
+  PceIuseBacklog    ProjectContentEntity[]   @relation(name: "PceIuseBacklog")
+  TmeIuseIterations TaskMetadataEntity[]     @relation(name: "TmeIuseIterations")
+  IceIuseTasks      IterationContentEntity[] @relation(name: "IceIuseTasks")
+}
+
+// // Define the ProjectMetadata model
+// model DurationEntity {
+//   ID        String   @unique
+//   UUID      String   @id @default(uuid())
+//   startDate DateTime
+//   endDate   DateTime
+// }
+
+// // Define the ProjectMetadata model
+// model CommentEntity {
+//   ID        String   @unique
+//   UUID      String   @id @default(uuid())
+//   content   String
+//   updatedBy String
+//   updatedAt DateTime
+// }
+
+// Define the ProjectMetadata model
+model NameUrlEntity {
+  UUID           String                 @id @default(uuid())
+  name           String
+  url            String
+  TceNueLinks    TaskContentEntity[]    @relation(name: "TceNueLinks")
+  TceNueLink     TaskDescriptionEntity? @relation(name: "TceNueLink", fields: [TceNueLinkUUID], references: [UUID])
+  TceNueLinkUUID String                 @unique
+}
+
+// Define the CommonDateEntity model
+model CommonDateEntity {
+  UUID                    String                    @id @default(uuid())
+  createdAt               DateTime                  @default(now())
+  createdBy               String
+  updatedAt               DateTime                  @updatedAt
+  updatedBy               String
+  startedAt               DateTime?
+  startedBy               String?
+  startDate               DateTime?
+  endDate                 DateTime?
+  completedAt             DateTime?
+  completedBy             String?
+  UserMetadataEntity      UserMetadataEntity[]
+  TeamMetadataEntity      TeamMetadataEntity[]
+  CommentMetadataEntity   CommentMetadataEntity[]
+  MetricMetadataEntity    MetricMetadataEntity[]
+  ProjectMetadataEntity   ProjectMetadataEntity[]
+  TaskMetadataEntity      TaskMetadataEntity[]
+  IterationMetadataEntity IterationMetadataEntity[]
+}
+
+// Define the Relation model
+model RelationEntity {
+  UUID            String               @id @default(uuid())
+  relationType    RELATION_TYPES
+  sourceUUID      String               @unique
+  targetUUID      String               @unique
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  TmeTreRelations TaskMetadataEntity[] @relation(name: "TmeTreRelations")
+}
+
+// Define the User model
+model UserEntity {
+  ID           String             @unique
+  UUID         String             @id @default(uuid())
+  metadata     UserMetadataEntity @relation(fields: [metadataUUID], references: [UUID])
+  content      UserContentEntity  @relation(fields: [contentUUID], references: [UUID])
+  metadataUUID String             @unique
+  contentUUID  String             @unique
+}
+
+// Define the UserMetadata model
+model UserMetadataEntity {
+  UUID       String           @id @default(uuid())
+  name       String
+  dates      CommonDateEntity @relation(fields: [datesUUID], references: [UUID])
+  datesUUID  String
+  UserEntity UserEntity?
+}
+
+// Define the UserContent model
+model UserContentEntity {
+  UUID         String               @id @default(uuid())
+  email        String               @unique
+  phone        String
+  firstName    String
+  lastName     String
+  password     String
+  projectRoles PROJECT_ROLE_TYPES[] @map(name: "projectRoles")
+  scrumRoles   SCRUM_ROLE_TYPES[]   @map(name: "scrumRoles")
+  UserEntity   UserEntity?
+}
+
+// Define the Team model
+model TeamEntity {
+  ID           String             @unique
+  UUID         String             @id @default(uuid())
+  metadata     TeamMetadataEntity @relation(fields: [metadataUUID], references: [UUID])
+  content      TeamContentEntity  @relation(fields: [contentUUID], references: [UUID])
+  metadataUUID String             @unique
+  contentUUID  String             @unique
+}
+
+// Define the TeamMetadata model
+model TeamMetadataEntity {
+  UUID       String           @id @default(uuid())
+  name       String
+  dates      CommonDateEntity @relation(fields: [datesUUID], references: [UUID])
+  datesUUID  String
+  TeamEntity TeamEntity?
+}
+
+// Define the TeamContentEntity model
+model TeamContentEntity {
+  UUID                   String         @id @default(uuid())
+  email                  String         @unique
+  members                IdUuidEntity[] @relation(name: "TceIueMembers")
+  productOwner           IdUuidEntity?  @relation(name: "TceIueProductOwner", fields: [TceIueProductOwnerUUID], references: [UUID])
+  scrumMaster            IdUuidEntity?  @relation(name: "TceIueScrumMaster", fields: [TceIueScrumMasterUUID], references: [UUID])
+  TeamEntity             TeamEntity?
+  TceIueProductOwnerUUID String
+  TceIueScrumMasterUUID  String
+  // TceIueRelationEntity   TceIueRelationEntity[]
+}
+
+// model TceIueRelationEntity {
+//   // UUID                  String             @id @default(uuid())
+//   IdUuidEntity          IdUuidEntity      @relation(fields: [IdUuidEntityUUID], references: [UUID])
+//   IdUuidEntityUUID      String
+//   TeamContentEntity     TeamContentEntity @relation(fields: [TeamContentEntityUUID], references: [UUID])
+//   TeamContentEntityUUID String
+
+//   @@id([IdUuidEntityUUID, TeamContentEntityUUID])
+// }
+
+// Define the Comment model
+model CommentEntity {
+  ID           String                @unique
+  UUID         String                @id @default(uuid())
+  metadata     CommentMetadataEntity @relation(fields: [metadataUUID], references: [UUID])
+  content      CommentContentEntity  @relation(fields: [contentUUID], references: [UUID])
+  metadataUUID String                @unique
+  contentUUID  String                @unique
+}
+
+// Define the CommentMetadata model
+model CommentMetadataEntity {
+  UUID          String           @id @default(uuid())
+  name          String
+  dates         CommonDateEntity @relation(fields: [datesUUID], references: [UUID])
+  datesUUID     String
+  CommentEntity CommentEntity?
+}
+
+// Define the CommentContent model
+model CommentContentEntity {
+  // Define any fields for CommentContentEntity if necessary
+  UUID          String         @id @default(uuid())
+  CommentEntity CommentEntity?
+}
+
+// Define the Metric model
+model MetricEntity {
+  ID           String               @unique
+  UUID         String               @id @default(uuid())
+  metadata     MetricMetadataEntity @relation(fields: [metadataUUID], references: [UUID])
+  content      MetricContentEntity  @relation(fields: [contentUUID], references: [UUID])
+  metadataUUID String               @unique
+  contentUUID  String               @unique
+}
+
+// Define the MetricMetadata model
+model MetricMetadataEntity {
+  UUID         String           @id @default(uuid())
+  name         String
+  dates        CommonDateEntity @relation(fields: [datesUUID], references: [UUID])
+  datesUUID    String
+  MetricEntity MetricEntity?
+}
+
+// Define the MetricContent model
+model MetricContentEntity {
+  // Define any fields for MetricContentEntity if necessary
+  UUID         String        @id @default(uuid())
+  MetricEntity MetricEntity?
+}
+
+// Define the Project model
+model ProjectEntity {
+  ID           String                @unique
+  UUID         String                @id @default(uuid())
+  metadata     ProjectMetadataEntity @relation(fields: [metadataUUID], references: [UUID])
+  content      ProjectContentEntity  @relation(fields: [contentUUID], references: [UUID])
+  metadataUUID String                @unique
+  contentUUID  String                @unique
+}
+
+// Define the ProjectMetadata model
+model ProjectMetadataEntity {
+  UUID          String               @id @default(uuid())
+  name          String
+  status        PROJECT_STATUS_TYPES
+  dates         CommonDateEntity     @relation(fields: [datesUUID], references: [UUID])
+  datesUUID     String
+  ProjectEntity ProjectEntity?
+}
+
+// Define the ProjectContent model
+model ProjectContentEntity {
+  UUID           String               @id @default(uuid())
+  email          String               @unique
+  description    String
+  iterations     IdUuidStatusEntity[] @relation(name: "PceIuseIterations")
+  backlog        IdUuidStatusEntity[] @relation(name: "PceIuseBacklog")
+  team           IdUuidEntity?        @relation(name: "PceIueTeam", fields: [PceIueTeamUUID], references: [UUID])
+  ProjectEntity  ProjectEntity?
+  PceIueTeamUUID String               @unique
+}
+
+model IterationEntity {
+  ID           String                  @unique
+  UUID         String                  @id @default(uuid())
+  metadata     IterationMetadataEntity @relation(fields: [metadataUUID], references: [UUID])
+  content      IterationContentEntity  @relation(fields: [contentUUID], references: [UUID])
+  metadataUUID String                  @unique
+  contentUUID  String                  @unique
+}
+
+model IterationMetadataEntity {
+  UUID            String               @id @default(uuid())
+  name            String
+  status          PROJECT_STATUS_TYPES
+  priority        TASK_PRIORITY_TYPES
+  risk            TASK_RISK_TYPES
+  tags            String[]
+  dates           CommonDateEntity     @relation(fields: [datesUUID], references: [UUID])
+  datesUUID       String
+  iterationType   ITERATION_TYPES
+  IterationEntity IterationEntity?
+}
+
+model IterationContentEntity {
+  UUID            String               @id @default(uuid())
+  description     String
+  goal            String
+  tasks           IdUuidStatusEntity[] @relation(name: "IceIuseTasks")
+  columns         String[]
+  IterationEntity IterationEntity?
+}
+
+model TaskEntity {
+  ID           String             @unique
+  UUID         String             @id @default(uuid())
+  metadata     TaskMetadataEntity @relation(fields: [metadataUUID], references: [UUID])
+  content      TaskContentEntity  @relation(fields: [contentUUID], references: [UUID])
+  metadataUUID String             @unique
+  contentUUID  String             @unique
+}
+
+model TaskMetadataEntity {
+  UUID                   String                 @id @default(uuid())
+  name                   String
+  taskType               TASK_TYPES
+  assignee               String
+  status                 TASK_STATUS_TYPES
+  priority               TASK_PRIORITY_TYPES
+  risk                   TASK_RISK_TYPES
+  tags                   String[]
+  dates                  CommonDateEntity       @relation(fields: [datesUUID], references: [UUID])
+  datesUUID              String
+  storyPoint             TaskStoryPointsEntity? @relation(fields: [TmeTspeStoryPointsUUID], references: [UUID])
+  iterations             IdUuidStatusEntity[]   @relation(name: "TmeIuseIterations")
+  relations              RelationEntity[]       @relation(name: "TmeTreRelations")
+  column                 String
+  TaskEntity             TaskEntity?
+  TmeTspeStoryPointsUUID String                 @unique
+  TmeTreRelationsUUID    String                 @unique
+}
+
+model TaskContentEntity {
+  UUID                  String                 @id @default(uuid())
+  context               String
+  description           TaskDescriptionEntity? @relation(fields: [TceTdeDescriptionUUID], references: [UUID])
+  links                 NameUrlEntity[]        @relation(name: "TceNueLinks")
+  comments              IdUuidEntity[]         @relation(name: "TceIueComments")
+  TaskEntity            TaskEntity?
+  TceTdeDescriptionUUID String                 @unique
+}
+
+model TaskStoryPointsEntity {
+  UUID               String                 @id @default(uuid())
+  complexity         TASK_COMPLEXITY_TYPES
+  uncertainty        TASK_UNCERTAINTY_TYPES
+  dependency         TASK_DEPENDENCY_TYPES
+  effort             TASK_EFFORT_TYPES
+  total              Int
+  TaskMetadataEntity TaskMetadataEntity?
+}
+
+model TaskDescriptionEntity {
+  UUID                  String             @id @default(uuid()) @map("_id")
+  summary               String
+  details               String
+  userStories           String[]
+  acceptanceCriteria    String[]
+  definitionOfDone      String[]
+  link                  NameUrlEntity?     @relation(name: "TceNueLink")
+  TceTdeDescriptionUUID TaskContentEntity?
+}
+
+enum GENERAL_STATUS_TYPES {
+  // Define your status types here
+  GENERAL_STATUS_TYPES_UNSPECIFIED
+  GENERAL_STATUS_TYPES_INACTIVE
+  GENERAL_STATUS_TYPES_ACTIVE
+  GENERAL_STATUS_TYPES_PLANNED
+  GENERAL_STATUS_TYPES_TODO
+  GENERAL_STATUS_TYPES_IN_PROGRESS
+  GENERAL_STATUS_TYPES_DONE
+  GENERAL_STATUS_TYPES_COMPLETED
+  GENERAL_STATUS_TYPES_CANCELLED
+  UNRECOGNIZED
+}
+
+enum PROJECT_ROLE_TYPES {
+  // Define your project role types here
+  PROJECT_ROLE_TYPES_UNSPECIFIED
+  PROJECT_ROLE_TYPES_PM
+  PROJECT_ROLE_TYPES_EM
+  PROJECT_ROLE_TYPES_DEV
+  PROJECT_ROLE_TYPES_QA
+  PROJECT_ROLE_TYPES_BA
+  PROJECT_ROLE_TYPES_UX
+  PROJECT_ROLE_TYPES_O
+  UNRECOGNIZED
+}
+
+enum SCRUM_ROLE_TYPES {
+  // Define your scrum role types here
+  SCRUM_ROLE_TYPES_UNSPECIFIED
+  SCRUM_ROLE_TYPES_PO
+  SCRUM_ROLE_TYPES_SM
+  SCRUM_ROLE_TYPES_MEMBER
+  SCRUM_ROLE_TYPES_O
+  UNRECOGNIZED
+}
+
+enum TASK_COMPLEXITY_TYPES {
+  // Define your task complexity types here
+  TASK_COMPLEXITY_TYPES_UNSPECIFIED
+  TASK_COMPLEXITY_TYPES_XS
+  TASK_COMPLEXITY_TYPES_S
+  TASK_COMPLEXITY_TYPES_M
+  TASK_COMPLEXITY_TYPES_L
+  TASK_COMPLEXITY_TYPES_XL
+  TASK_COMPLEXITY_TYPES_I
+  UNRECOGNIZED
+}
+
+enum TASK_UNCERTAINTY_TYPES {
+  // Define your task uncertainty types here
+  TASK_UNCERTAINTY_TYPES_UNSPECIFIED
+  TASK_UNCERTAINTY_TYPES_NONE
+  TASK_UNCERTAINTY_TYPES_SOME
+  TASK_UNCERTAINTY_TYPES_LOW
+  TASK_UNCERTAINTY_TYPES_MODERATE
+  TASK_UNCERTAINTY_TYPES_HIGH
+  TASK_UNCERTAINTY_TYPES_EXTREME
+  UNRECOGNIZED
+}
+
+enum TASK_DEPENDENCY_TYPES {
+  // Define your task dependency types here
+  TASK_DEPENDENCY_TYPES_UNSPECIFIED
+  TASK_DEPENDENCY_TYPES_NONE
+  TASK_DEPENDENCY_TYPES_ALMOST_NONE
+  TASK_DEPENDENCY_TYPES_SOME
+  TASK_DEPENDENCY_TYPES_FEW
+  TASK_DEPENDENCY_TYPES_MORE_THAN_A_FEW
+  TASK_DEPENDENCY_TYPES_UNKNOWN
+  UNRECOGNIZED
+}
+
+enum TASK_EFFORT_TYPES {
+  // Define your task effort types here
+  TASK_EFFORT_TYPES_UNSPECIFIED
+  TASK_EFFORT_TYPES_XS
+  TASK_EFFORT_TYPES_S
+  TASK_EFFORT_TYPES_M
+  TASK_EFFORT_TYPES_L
+  TASK_EFFORT_TYPES_XL
+  TASK_EFFORT_TYPES_I
+  UNRECOGNIZED
+}
+
+enum TASK_TYPES {
+  // Define your task types here
+  TASK_TYPES_UNSPECIFIED
+  TASK_TYPES_EPIC
+  TASK_TYPES_STORY
+  TASK_TYPES_TASK
+  TASK_TYPES_BUG
+  TASK_TYPES_FEATURE
+  TASK_TYPES_IMPROVEMENT
+  TASK_TYPES_SUB_TASK
+  UNRECOGNIZED
+}
+
+enum TASK_STATUS_TYPES {
+  // Define your task status types here
+  TASK_STATUS_TYPES_UNSPECIFIED
+  TASK_STATUS_TYPES_TODO
+  TASK_STATUS_TYPES_IN_PROGRESS
+  TASK_STATUS_TYPES_DONE
+  UNRECOGNIZED
+}
+
+enum TASK_PRIORITY_TYPES {
+  // Define your task priority types here
+  TASK_PRIORITY_TYPES_UNSPECIFIED
+  TASK_PRIORITY_TYPES_P0
+  TASK_PRIORITY_TYPES_P1
+  TASK_PRIORITY_TYPES_P2
+  TASK_PRIORITY_TYPES_P3
+  UNRECOGNIZED
+}
+
+enum TASK_RISK_TYPES {
+  // Define your task risk types here
+  TASK_RISK_TYPES_UNSPECIFIED
+  TASK_RISK_TYPES_LOW
+  TASK_RISK_TYPES_MEDIUM
+  TASK_RISK_TYPES_HIGH
+  UNRECOGNIZED
+}
+
+enum ITERATION_TYPES {
+  // Define your iteration types here
+  ITERATION_TYPES_UNSPECIFIED
+  ITERATION_TYPES_SCRUM
+  ITERATION_TYPES_KANBAN
+  UNRECOGNIZED
+}
+
+enum PROJECT_STATUS_TYPES {
+  // Define your project status types here
+  PROJECT_STATUS_TYPES_UNSPECIFIED
+  PROJECT_STATUS_TYPES_PLANNED
+  PROJECT_STATUS_TYPES_IN_PROGRESS
+  PROJECT_STATUS_TYPES_COMPLETED
+  UNRECOGNIZED
+}
+
+enum RELATION_TYPES {
+  // Define your relation types here
+  RELATION_TYPES_UNSPECIFIED
+  RELATION_TYPES_PARENT
+  RELATION_TYPES_SUBTASKS
+  RELATION_TYPES_PREDECESSORS
+  RELATION_TYPES_SUCCESSORS
+  RELATION_TYPES_RELATES_TO
+  RELATION_TYPES_BLOCKED_BY
+  UNRECOGNIZED
+}

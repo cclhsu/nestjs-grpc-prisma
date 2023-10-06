@@ -1,0 +1,10 @@
+# .eslintignore
+node_modules
+bin
+build
+dist
+out
+public
+.eslintrc.js
+generated
+src/**/generated/*

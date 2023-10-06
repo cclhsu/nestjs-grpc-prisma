@@ -1,0 +1,12 @@
+// db/prisma/mongodb/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../generated/prisma/mongodb/client"
+}
+
+datasource mongodb {
+  provider = "mongodb"
+  url      = env("MONGODB_URL")
+}
+
+// Define your MongoDB models here

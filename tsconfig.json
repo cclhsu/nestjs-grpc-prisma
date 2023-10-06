@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    // Language and module settings
+    "target": "ES2021",
+    "module": "commonjs",
+    // "module": "ESNext",
+
+    // Type checking and strict mode
+    "strict": true, // Enable all strict type checking options
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    // "strictPropertyInitialization": false,  // for fixing TS2564: Property has no initializer and is not definitely assigned in the constructor.
+
+    // Decorators and metadata
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    // Bundler and module resolution
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+
+    // Output and build settings
+    "baseUrl": "./",
+    "declaration": true,
+    "incremental": true,
+    "outDir": "./dist",
+    "removeComments": true,
+    "sourceMap": true
+  },
+}

@@ -1,0 +1,16 @@
+// Path: src/common/constant/constant.constant.ts
+// DESC: general constant types
+'use strict';
+// import { ExecutionContext, Injectable } from '@nestjs/common';
+// import { GqlExecutionContext } from '@nestjs/graphql';
+// import { AuthGuard } from '@nestjs/passport';
+
+// @Injectable()
+// export class GraphQLAuthGuard extends AuthGuard('jwt') {
+//   getRequest(context: ExecutionContext) {
+//     const ctx = GqlExecutionContext.create(context);
+//     return ctx.getContext().req;
+//   }
+// }
+
+export {};
